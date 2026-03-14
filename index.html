@@ -4175,6 +4175,8 @@ document.querySelectorAll('.theme-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     applyTheme(btn.dataset.theme);
     themeSwitcher.classList.remove('open');
+    /* Manual change — reset the auto-rotation timer */
+    resetAutoThemeTimer();
   });
 });
 
@@ -4183,6 +4185,40 @@ document.querySelectorAll('.theme-btn').forEach(btn=>{
 /* Init — apply cyan without crossfade (page load) */
 window._themeColors = THEMES.cyan;
 applyTheme('cyan', true); // true = skipTransition
+
+/* ══════════════════════════════
+   AUTO THEME ROTATION — every 60s
+   • Au chargement : cyan pendant 1min, puis theme aleatoire (pas cyan)
+   • Changement manuel : repart sur un nouveau timer de 1min
+   • Exclut toujours le theme n (actuel) ET le theme n-1 du tirage
+══════════════════════════════ */
+(function() {
+  const ALL_THEMES = Object.keys(THEMES);
+  const INTERVAL_MS = 60 * 1000;
+  let _autoTimer = null;
+  let _prevTheme = null;
+
+  function pickNextTheme(excludeCurrent, excludePrev) {
+    const pool = ALL_THEMES.filter(t => t !== excludeCurrent && t !== excludePrev);
+    const source = pool.length > 0 ? pool : ALL_THEMES.filter(t => t !== excludeCurrent);
+    return source[Math.floor(Math.random() * source.length)];
+  }
+
+  function autoSwitch() {
+    const next = pickNextTheme(currentTheme, _prevTheme);
+    _prevTheme = currentTheme;
+    applyTheme(next);
+    _autoTimer = setTimeout(autoSwitch, INTERVAL_MS);
+  }
+
+  window.resetAutoThemeTimer = function() {
+    _prevTheme = currentTheme;
+    if (_autoTimer) clearTimeout(_autoTimer);
+    _autoTimer = setTimeout(autoSwitch, INTERVAL_MS);
+  };
+
+  _autoTimer = setTimeout(autoSwitch, INTERVAL_MS);
+})();
 
 /* ── Override draw functions to be theme-aware ── */
 const _origDrawDust = drawDust;
