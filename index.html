@@ -41,13 +41,20 @@ body {
   animation: pulse 12s ease infinite;
 }
 #Layer2 {
-  position: absolute;
+  position: fixed;
   fill: none;
-  overflow: initial;
-  width: 501%;
-  left: -165.1%;
+  overflow: visible;
+  width: 501vw;
+  left: -165vw;
   z-index: 48;
-  top: 22.8%;
+  /* The ECG midline sits at y=242 inside a viewBox of height 500.
+     That's 48.4% from the top of the SVG.
+     We want that point to land exactly at 50% of the viewport height.
+     So:  top = 50vh - (48.4% of SVG rendered height)
+     SVG rendered height = width * (500/7731) = 501vw * 0.0647 ≈ 32.43vw
+     48.4% of 32.43vw ≈ 15.69vw
+     → top = calc(50vh - 15.69vw) */
+  top: calc(50vh - 15.69vw);
   stroke: #0bbdc2;
   filter: blur(7px);
   stroke-width: 7px;
@@ -1555,7 +1562,7 @@ bgCtx.imageSmoothingEnabled   = false;
 logoCtx.imageSmoothingEnabled = false;
 
 function rand(a, b) { return a + Math.random() * (b - a); }
-function getEcgY()  { return bgCanvas.height * 0.455; }
+function getEcgY()  { return bgCanvas.height * 0.5; }
 function getLogoCX(){ return bgCanvas.width  * 0.5; }
 function getLogoCY(){ return bgCanvas.height * 0.455; }
 
@@ -2303,7 +2310,7 @@ const THEMES = {
     heartSt1: '#8aa0b0',
   },
   amber: {
-    bg: '#0d3b66',
+    bg: '#00162a',
     ecgStroke: '#ee964b',
     pulse: [
       { pct:'0%',   v:'stroke-dashoffset:627; stroke:transparent; fill:transparent;' },
